@@ -144,3 +144,13 @@ o.requiredDate as REQUIRED_DATE, o.shippedDate as SHIPPED_DATE
 FROM orderdetails od
 INNER JOIN products p ON od.productCode = p.productCode
 INNER JOIN orders o ON o.orderNumber = od.orderNumber);
+
+
+//------- View with order and products-------
+CREATE VIEW orderedProducts AS (SELECT o.orderNumber,
+  od.quantityOrdered, od.priceEach,
+  (od.quantityOrdered * od.priceEach) as ORDER_vALUE
+FROM orders o
+  INNER JOIN orderdetails od ON o.orderNumber = od.orderNumber
+  INNER JOIN products p ON p.productCode = od.productCode
+ORDER BY 1);
