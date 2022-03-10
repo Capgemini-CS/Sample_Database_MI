@@ -84,8 +84,8 @@ SELECT od.orderNumber as ORDER_NUMBER, od.quantityOrdered as QUANTITY_ORDERED,
 p.quantityInStock as QUANTITY_IN_STOCK, p.productName as PRODUCT_NAME ,
 o.requiredDate as REQUIRED_DATE, o.shippedDate as SHIPPED_DATE
 FROM orderdetails od
-INNER JOIN products p ON od.productCode = p.productCode
-INNER JOIN orders o ON o.orderNumber = od.orderNumber;
+  INNER JOIN products p ON od.productCode = p.productCode
+  INNER JOIN orders o ON o.orderNumber = od.orderNumber;
 
 
 //------------------------------- Select from ViewTable when the quantity in stock is 7933 -------------------------------
@@ -99,8 +99,42 @@ select * from viewProductOrdered WHERE QUANTITY_IN_STOCK = 7933;
 
 SELECT orderNumber as ORDER_NUMBER , orderDate as ORDER_DATE , requiredDate as REQUIRED_DATE , shippedDate as SHIPPED_DATE,
 CASE
-WHEN shippedDate < requiredDate THEN 'Your order has been delivered.'
-WHEN shippedDate > requiredDate THEN 'Your order has not arrived yet.'
-ELSE 'Your order has not yet been registered.'
+  WHEN shippedDate < requiredDate THEN 'Your order has been delivered.'
+  WHEN shippedDate > requiredDate THEN 'Your order has not arrived yet.'
+  ELSE 'Your order has not yet been registered.'
 END OrderStatus
 FROM orders;
+
+
+//---------------------- Adding the column with the value of the product depending on the quantity and price ----------------------
+
+
+ALTER TABLE products
+ADD COLUMN VALUE_PRODUCT DECIMAL(10,2) NOT NULL AFTER buyPrice;
+
+UPDATE products SET VALUE_PRODUCT = quantityInStock * buyPrice;
+
+
+//---------------------- SHOW HOW MANY PRODUCTS EACH ORDER HAS AND ITS VALUE ----------------------
+
+
+SELECT o.orderNumber,
+  od.quantityOrdered, od.priceEach,
+  (od.quantityOrdered * od.priceEach) as ORDER_vALUE
+FROM orders o
+  INNER JOIN orderdetails od ON o.orderNumber = od.orderNumber
+  INNER JOIN products p ON p.productCode = od.productCode
+GROUP BY o.orderNumber
+ORDER BY 1;
+
+
+//---------------------- Show the order with the lowest value ordered and the highest value. ----------------------
+
+
+SELECT MIN(ORDER_VALUE), MAX(ORDER_VALUE) FROM orderedProducts;
+
+
+//---------------------- Show orders that have been resolved or canceled ----------------------
+
+
+SELECT orderNumber, status FROM orders WHERE status = 'Resolved' OR status='Cancelled';
